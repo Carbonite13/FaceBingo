@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FaceBingo — Users</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/global.css') }}">
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="FaceBingo home">
+        <div class="brand-icon">
+          <span class="icon icon--sm">grid_view</span>
+        </div>
+        <span class="brand-name">FaceBingo</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-wrapper">
+      <section class="hero fade-up">
+        <h1 class="hero-title" style="font-size: 2.5rem;">Registered Users</h1>
+        <p class="hero-subtitle">Meet the people at the event.</p>
+      </section>
+
+      <div class="stat-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+        {% for user in users %}
+        <div class="stat-card fade-up">
+          <div style="font-weight: 600; font-size: 1.2rem; color: var(--clr-primary-dk); margin-bottom: var(--sp-1);">
+            {{ user.name }}
+          </div>
+          <div style="color: var(--clr-text-2); font-size: 0.95rem;">
+            {{ user.additional_metadata.bio if user.additional_metadata and user.additional_metadata.bio else 'No bio provided.' }}
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state">No users registered yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </main>
+</body>
+</html>

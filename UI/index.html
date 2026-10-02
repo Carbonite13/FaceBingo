@@ -117,14 +117,26 @@
                 document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(savedProfile)) + "; path=/";
             }
 
-            saveBtn.addEventListener('click', () => {
+            saveBtn.addEventListener('click', async () => {
                 const name = inputName.value.trim();
                 const bio = inputBio.value.trim();
                 if (name) {
-                    const profile = { name, bio };
-                    localStorage.setItem('facebingo_profile', JSON.stringify(profile));
-                    document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(profile)) + "; path=/";
-                    modal.classList.remove('active');
+                    try {
+                        const res = await fetch("/api/register", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ name, bio })
+                        });
+                        if(res.ok) {
+                            const data = await res.json();
+                            const profile = { id: data.id, name: data.name, bio: data.bio };
+                            localStorage.setItem('facebingo_profile', JSON.stringify(profile));
+                            document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(profile)) + "; path=/";
+                            modal.classList.remove('active');
+                        } else {
+                            console.error("Registration failed");
+                        }
+                    } catch(e) { console.error(e); }
                 } else {
                     inputName.style.borderColor = 'var(--clr-danger-dk)';
                 }

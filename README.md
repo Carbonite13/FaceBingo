@@ -65,6 +65,20 @@ WITH CHECK (
     -- Change if using a different bucket name
     bucket_id = 'facebingo-photos' 
 );
+
+-- Create a table for registered users
+CREATE TABLE IF NOT EXISTS public.users (
+    id              uuid            PRIMARY KEY DEFAULT gen_random_uuid(),
+    name            text            NOT NULL UNIQUE,
+    additional_metadata jsonb       DEFAULT '{}'::jsonb,
+    created_at      timestamptz     NOT NULL DEFAULT now()
+);
+
+-- Enable RLS for users
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_insert_users" ON public.users FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon_update_users" ON public.users FOR UPDATE TO anon USING (true);
+CREATE POLICY "anon_select_users" ON public.users FOR SELECT TO anon USING (true);
 ```
 
 ## Environment Variables
@@ -91,11 +105,14 @@ See [`.env.example`](.env.example) for the full list with descriptions.
 | `POST` | `/submit` | — | Save encounter + upload photo |
 | `GET` | `/timed-out` | — | Page for paused submissions |
 | `GET` | `/public` | — | Page 4 — public live event feed |
+| `POST` | `/api/register` | — | Register a user profile |
+| `GET` | `/users` | — | View all registered users |
 | `GET` | `/admin` | Basic Auth | Page 3 — admin dashboard |
 | `GET` | `/admin/stats` | — | JSON stats for dashboard polling |
 | `GET` | `/admin/status` | Basic Auth | Get submissions status |
 | `POST` | `/admin/status` | Basic Auth | Toggle submissions status |
 | `DELETE` | `/admin/encounters/{id}` | Basic Auth | Delete an encounter record and its photo |
+| `DELETE` | `/admin/users/{id}` | Basic Auth | Delete a registered user |
 | `GET` | `/debug/*` | Basic Auth | Config verification endpoints |
 | `GET` | `/health` | — | Liveness probe |
 

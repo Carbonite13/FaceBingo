@@ -19,6 +19,7 @@ from config import config
 from core.storage import upload_photo
 from core.template import templates
 from core.domain import ParticipantProfile
+from pydantic import BaseModel
 
 logger = logging.getLogger("facebingo.submissions")
 
@@ -27,6 +28,27 @@ router = APIRouter(tags=["submissions"])
 _ALPHABETS = set(string.ascii_uppercase)  # O(1) membership check
 _MAX_PHOTO_BYTES = 5 * 1024 * 1024  # 5 MB
 _ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+class RegisterRequest(BaseModel):
+    name: str
+    bio: str
+
+@router.post("/api/register")
+async def register_user(req: RegisterRequest) -> JSONResponse:
+    """Register a new user or update an existing one, saving to users table."""
+    db = get_supabase()
+    existing = db.table("users").select("*").eq("name", req.name).execute()
+    if existing.data:
+        user_id = existing.data[0]["id"]
+        # update metadata
+        db.table("users").update({"additional_metadata": {"bio": req.bio}}).eq("id", user_id).execute()
+    else:
+        res = db.table("users").insert({
+            "name": req.name,
+            "additional_metadata": {"bio": req.bio}
+        }).execute()
+        user_id = res.data[0]["id"]
+    return JSONResponse({"id": user_id, "name": req.name, "bio": req.bio})
 
 
 @router.post("/submit", response_class=HTMLResponse, name="submit")
@@ -145,12 +167,17 @@ async def admin_stats(request: Request) -> JSONResponse:
 
     most_active_letter = max(letter_counts, key=lambda k: letter_counts[k], default="—")
 
+    # Fetch users for admin users tab
+    users_result = db.table("users").select("*").order("created_at", desc=True).execute()
+    users = users_result.data or []
+
     stats = {
         "total_encounters": total,
         "unique_participants": unique_submitters,
         "most_active_letter": most_active_letter,
         "letter_counts": letter_counts,
         "recent": rows[:20],  # latest 20 for the live feed
+        "users": users,
     }
 
     return JSONResponse(content=stats)
@@ -181,6 +208,17 @@ async def admin_delete_encounter(
 
     # Delete the record from the database
     db.table(config.active_table).delete().eq("id", encounter_id).execute()
+    return JSONResponse(content={"status": "ok"})
+
+
+@router.delete("/admin/users/{user_id}", name="admin_delete_user")
+async def admin_delete_user(
+    user_id: str,
+    _: str = Depends(require_admin),
+) -> JSONResponse:
+    logger.info("Admin deleting user %s", user_id)
+    db = get_supabase()
+    db.table("users").delete().eq("id", user_id).execute()
     return JSONResponse(content={"status": "ok"})
 
 

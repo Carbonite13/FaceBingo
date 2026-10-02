@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.status import HTTP_404_NOT_FOUND
 
 from api.auth import require_admin
-from api.dependencies import get_participant_profile
+from api.dependencies import get_participant_profile, get_supabase
 from api.state import state
 from core.template import templates
 from core.domain import ParticipantProfile
@@ -64,6 +64,18 @@ async def public(request: Request) -> HTMLResponse:
     """Page 4 — public statistics and feed dashboard."""
     logger.info("Rendering public dashboard")
     return templates.TemplateResponse(request=request, name="public.html", context={})
+
+
+@router.get("/users", response_class=HTMLResponse, name="users")
+async def users_page(request: Request) -> HTMLResponse:
+    """View all registered users."""
+    db = get_supabase()
+    users_result = db.table("users").select("*").order("created_at", desc=True).execute()
+    return templates.TemplateResponse(
+        request=request, 
+        name="users.html", 
+        context={"users": users_result.data or []}
+    )
 
 
 @router.get("/timed-out", response_class=HTMLResponse, name="timed_out")
