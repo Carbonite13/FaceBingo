@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="{{ url_for('static', path='/global.css') }}" />
+    <link rel="shortcut icon" href="{{ url_for('static', path='/FaceBingo Logo.png') }}" type="image/x-icon">
 </head>
 
 <body>
@@ -25,7 +26,8 @@
                 <span class="brand-tagline">Meet people, share a moment</span>
             </a>
             <div class="header-spacer"></div>
-            <button class="btn btn--ghost btn--sm" id="btn-edit-profile" aria-label="Edit Profile" onclick="document.getElementById('welcome-modal').classList.add('active');">
+            <button class="btn btn--ghost btn--sm" id="btn-edit-profile" aria-label="Edit Profile"
+                onclick="document.getElementById('welcome-modal').classList.add('active');">
                 <span class="icon icon--sm">account_circle</span>
             </button>
         </div>
@@ -71,7 +73,8 @@
     <!-- Welcome Modal -->
     <div class="modal-overlay" id="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-content" style="position: relative;">
-            <button class="btn btn--ghost btn--sm" id="btn-cancel-modal" aria-label="Close modal" style="position: absolute; top: var(--sp-4); right: var(--sp-4); padding: var(--sp-1); border: none;">
+            <button class="btn btn--ghost btn--sm" id="btn-cancel-modal" aria-label="Close modal"
+                style="position: absolute; top: var(--sp-4); right: var(--sp-4); padding: var(--sp-1); border: none;">
                 <span class="icon icon--sm">close</span>
             </button>
             <h2 class="modal-title" id="modal-title">Welcome to FaceBingo!</h2>
@@ -82,7 +85,8 @@
             </div>
             <div class="form-group" style="margin-bottom: var(--sp-4);">
                 <label class="form-label" for="onboarding-bio">A short bio</label>
-                <textarea class="form-textarea" id="onboarding-bio" placeholder="e.g. I love hiking!" rows="2"></textarea>
+                <textarea class="form-textarea" id="onboarding-bio" placeholder="e.g. I love hiking!"
+                    rows="2"></textarea>
             </div>
             <div style="display: flex; gap: var(--sp-2);">
                 <button class="btn btn--ghost flex-1" id="btn-cancel-modal-bottom" style="flex: 1;">
@@ -101,8 +105,8 @@
             const savedProfileString = localStorage.getItem('facebingo_profile');
             let savedProfile = null;
             try {
-                if(savedProfileString) savedProfile = JSON.parse(savedProfileString);
-            } catch(e) {}
+                if (savedProfileString) savedProfile = JSON.parse(savedProfileString);
+            } catch (e) { }
 
             // Legacy fallback
             if (!savedProfile) {
@@ -180,7 +184,7 @@
                     inputName.style.borderColor = 'var(--clr-danger-dk)';
                 }
             });
-            
+
             inputName.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') saveBtn.click();
             });

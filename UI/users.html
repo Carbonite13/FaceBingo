@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>FaceBingo — Users</title>
   <link rel="stylesheet" href="{{ url_for('static', path='/global.css') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', path='/FaceBingo Logo.png') }}" type="image/x-icon">
 </head>
+
 <body>
   <!-- Header -->
   <header class="site-header">
@@ -32,7 +35,8 @@
             {{ user.name }}
           </div>
           <div style="color: var(--clr-text-2); font-size: 0.95rem;">
-            {{ user.additional_metadata.bio if user.additional_metadata and user.additional_metadata.bio else 'No bio provided.' }}
+            {{ user.additional_metadata.bio if user.additional_metadata and user.additional_metadata.bio else 'No bio
+            provided.' }}
           </div>
         </div>
         {% else %}
@@ -42,4 +46,5 @@
     </div>
   </main>
 </body>
+
 </html>

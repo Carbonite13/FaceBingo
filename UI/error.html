@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>FaceBingo — Error</title>
   <link rel="stylesheet" href="{{ url_for('static', path='/global.css') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', path='/FaceBingo Logo.png') }}" type="image/x-icon">
   <style>
     .center-message {
       display: flex;
@@ -14,16 +16,28 @@
       text-align: center;
       padding: var(--sp-4);
     }
-    .center-message h1 { font-size: 4rem; margin-bottom: var(--sp-2); color: var(--clr-danger); }
-    .center-message p { font-size: var(--text-lg); color: var(--clr-text-2); }
+
+    .center-message h1 {
+      font-size: 4rem;
+      margin-bottom: var(--sp-2);
+      color: var(--clr-danger);
+    }
+
+    .center-message p {
+      font-size: var(--text-lg);
+      color: var(--clr-text-2);
+    }
   </style>
 </head>
+
 <body>
   <div class="center-message">
-    <span class="icon icon--xl" style="font-size: 4rem; color: var(--clr-muted); margin-bottom: var(--sp-2);">error_outline</span>
+    <span class="icon icon--xl"
+      style="font-size: 4rem; color: var(--clr-muted); margin-bottom: var(--sp-2);">error_outline</span>
     <h1>500 Not Found</h1>
     <p>Oops! Something went wrong or we couldn't find the page you're looking for.</p>
     <a href="/" class="btn btn--primary" style="margin-top: var(--sp-4);">Return Home</a>
   </div>
 </body>
+
 </html>
