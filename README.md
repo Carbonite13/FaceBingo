@@ -1,28 +1,21 @@
 # FaceBingo
-> Meet people, click a selfie, share a thought
-
+#### Meet people, click a selfie, share a thought
 A lightweight event icebreaker — participants pick their initial, log who they met, share a thought, and snap a selfie.
-
----
 
 ## Quick Start
 
 ```bash
-# 1. Clone and install dependencies
+# Clone and install dependencies
 poetry install
 
-# 2. Copy and fill in your secrets
+# Copy and fill in your secrets
 cp .env.example .env
 
-# 3. Run the DDL against your Supabase project (see section below)
-
-# 4. Start the dev server
+# Run the DDL against your Supabase project (see section below)
+# Start the dev server
 poetry run uvicorn main:app --reload
 ```
-
 Open [http://localhost:8000](http://localhost:8000).
-
----
 
 ## Database Setup (Supabase DDL)
 
@@ -30,7 +23,7 @@ Run the following SQL in the **Supabase SQL Editor**
 (Dashboard → SQL Editor → New query):
 
 ```sql
--- ── encounters table ──────────────────────────────────────────────────────────
+-- encounters table
 CREATE TABLE IF NOT EXISTS public.encounters (
     id              uuid            PRIMARY KEY DEFAULT gen_random_uuid(),
     submitter_name  text            NOT NULL,
@@ -49,7 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_encounters_created_at
 CREATE INDEX IF NOT EXISTS idx_encounters_letter
     ON public.encounters (letter);
 
--- ── Row Level Security ────────────────────────────────────────────────────────
+-- Row Level Security
 -- Enable RLS so the anon key cannot read other participants' data directly.
 ALTER TABLE public.encounters ENABLE ROW LEVEL SECURITY;
 
@@ -64,8 +57,6 @@ CREATE POLICY "anon_select_own" ON public.encounters
     FOR SELECT TO anon
     USING (true);
 ```
-
----
 
 ## Storage Setup (Supabase Bucket)
 
@@ -84,10 +75,7 @@ WITH CHECK (
 );
 ```
 
----
-
 ## Environment Variables
-
 See [`.env.example`](.env.example) for the full list with descriptions.
 
 | Variable | Required | Default |
@@ -103,16 +91,13 @@ See [`.env.example`](.env.example) for the full list with descriptions.
 | `APP_ENV` | | `development` |
 | `LOG_LEVEL` | | `INFO` |
 
----
-
 ## Routes
-
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `GET` | `/` | — | Page 1 — alphabet grid |
 | `GET` | `/encounter/{letter}` | — | Page 2 — encounter form |
 | `POST` | `/submit` | — | Save encounter + upload photo |
 | `GET` | `/admin` | Basic Auth | Page 3 — admin dashboard |
-| `GET` | `/admin/stats` | Basic Auth | JSON stats for dashboard polling |
+| `GET` | `/admin/stats` | — | JSON stats for dashboard polling |
 | `GET` | `/debug/*` | Basic Auth | Config verification endpoints |
 | `GET` | `/health` | — | Liveness probe |
