@@ -28,6 +28,8 @@ poetry run uvicorn main:app --reload --host 0.0.0.0 --port $port
 Set up the database by executing the sql script at `seed.sql` which consists of the required
 DDL commands and sequence to set up the initial architecture.
 
+> See [`seed.sql`](Seed)
+
 ## Environment Variables
 See [`.env.example`](.env.example) for the full list with descriptions.
 
