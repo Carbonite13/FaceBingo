@@ -96,7 +96,7 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [letter, your_name, met_name, thought]
+              required: [letter, your_name, met_name, thought, photo]
               properties:
                 letter:
                   type: string
@@ -118,7 +118,7 @@ paths:
                 photo:
                   type: string
                   format: binary
-                  description: Optional photo (JPEG, PNG, or WebP). Max 5 MB.
+                  description: Required photo (JPEG, PNG, or WebP). Max 5 MB.
       responses:
         "200":
           description: Success page HTML rendered

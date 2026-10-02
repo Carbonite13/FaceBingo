@@ -63,15 +63,8 @@
             <!-- Hidden letter field -->
             <input type="hidden" name="letter" value="{{ letter }}" />
 
-            <!-- Your name -->
-            <div class="form-group">
-              <label class="form-label" for="your-name">
-                <span class="icon icon--sm">person</span>
-                Your name
-              </label>
-              <input class="form-input" type="text" id="your-name" name="your_name" placeholder="e.g. {{ letter }}..."
-                autocomplete="given-name" required />
-            </div>
+            <!-- Your name (hidden, populated by localStorage) -->
+            <input type="hidden" id="your-name" name="your_name" value="" />
 
             <!-- Person you met -->
             <div class="form-group">
@@ -168,6 +161,19 @@
   </footer>
 
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedName = localStorage.getItem('facebingo_username');
+      if (savedName) {
+        const nameInput = document.getElementById('your-name');
+        if (nameInput) {
+          nameInput.value = savedName;
+        }
+      } else {
+        // If they bypass the homepage somehow, send them back to enter their name
+        window.location.href = '/';
+      }
+    });
+
     /* Tab switching */
     function switchTab(tab) {
       const isCamera = tab === 'camera';
@@ -270,9 +276,19 @@
       const metName = document.getElementById('met-name').value.trim();
       const thought = document.getElementById('thought').value.trim();
 
+      const photoFileInput = document.getElementById('photo-file');
+      const blobInput = document.getElementById('photo-blob-input');
+      const hasPhoto = (photoFileInput && photoFileInput.files.length > 0) || (blobInput && blobInput.files.length > 0);
+
       if (!yourName || !metName || !thought) {
         e.preventDefault();
-        showError('Please fill in all three fields before submitting.');
+        showError('Please fill in all text fields before submitting.');
+        return;
+      }
+
+      if (!hasPhoto) {
+        e.preventDefault();
+        showError('A photo is required. Please take a selfie or upload an image.');
         return;
       }
 

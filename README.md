@@ -15,8 +15,9 @@ cp .env.example .env
 # Start the dev server
 poetry run uvicorn main:app --reload
 
-# IF interface needs to be accessible across the network,
+# If interface needs to be accessible across the network
 # use the flags --host and --port
+# potery run uvicorn <module>:<app-generator> --host <interface-ip> --port <port-number>
 poetry run uvicorn main:app --reload --host 0.0.0.0 --port $port
 ```
 > Open [https://facebingo-rosy.vercel.app](FaceBingo - App).
@@ -71,16 +72,16 @@ See [`.env.example`](.env.example) for the full list with descriptions.
 
 | Variable | Required | Default |
 |---|---|---|
-| `SUPABASE_URL` | ✅ | — |
-| `SUPABASE_ANON_KEY` | ✅ | — |
-| `ADMIN_USERNAME` | ✅ | — |
-| `ADMIN_PASSWORD` | ✅ | — |
-| `SUPABASE_BUCKET` | | `facebingo-photos` |
-| `SUPABASE_TABLE` | | `encounters` |
-| `ALLOWED_ORIGINS` | | `["*"]` |
-| `RATE_LIMIT` | | `20/minute` |
-| `APP_ENV` | | `development` |
-| `LOG_LEVEL` | | `INFO` |
+| `SUPABASE_URL` | Yes | — |
+| `SUPABASE_ANON_KEY` | Yes | — |
+| `ADMIN_USERNAME` | Yes | —|
+| `ADMIN_PASSWORD` | Yes | — |
+| `SUPABASE_BUCKET` | No | `facebingo-photos` |
+| `SUPABASE_TABLE` | No | `encounters` |
+| `ALLOWED_ORIGINS` | No | `["*"]` |
+| `RATE_LIMIT` | No | `20/minute` |
+| `APP_ENV` | No | `development` |
+| `LOG_LEVEL` | No | `INFO` |
 
 ## Routes
 | Method | Path | Auth | Description |
@@ -92,3 +93,5 @@ See [`.env.example`](.env.example) for the full list with descriptions.
 | `GET` | `/admin/stats` | — | JSON stats for dashboard polling |
 | `GET` | `/debug/*` | Basic Auth | Config verification endpoints |
 | `GET` | `/health` | — | Liveness probe |
+
+Further documentation on routes can be found at `docs/apidocs.yaml`

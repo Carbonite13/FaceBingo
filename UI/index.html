@@ -38,9 +38,9 @@
                     <span class="icon icon--sm">waving_hand</span>
                     Let's get started
                 </div>
-                <h1 class="hero-title">Pick the first letter<br>of your name</h1>
+                <h1 class="hero-title">Pick the first letter<br>of their name</h1>
                 <p class="hero-subtitle">
-                    Tap your initial below, then tell us about the amazing person you just met.
+                    Tap their initial below, then tell us about something you guys shared.
                 </p>
             </section>
 
@@ -64,6 +64,50 @@
     <footer class="site-footer">
         <span>FaceBingo &copy; 2026</span>
     </footer>
+
+    <!-- Welcome Modal -->
+    <div class="modal-overlay" id="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modal-title">Welcome to FaceBingo!</h2>
+            <p class="modal-desc">Please enter your name to get started. This will be saved on your device for this session.</p>
+            <div class="form-group" style="margin-bottom: var(--sp-4);">
+                <label class="form-label" for="onboarding-name">Your Name</label>
+                <input class="form-input" type="text" id="onboarding-name" placeholder="e.g. Alice" />
+            </div>
+            <button class="btn btn--primary btn--full" id="btn-save-name">
+                <span class="icon icon--sm">check</span>
+                Save Name
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedName = localStorage.getItem('facebingo_username');
+            const modal = document.getElementById('welcome-modal');
+            const input = document.getElementById('onboarding-name');
+            const saveBtn = document.getElementById('btn-save-name');
+
+            if (!savedName) {
+                modal.classList.add('active');
+                input.focus();
+            }
+
+            saveBtn.addEventListener('click', () => {
+                const name = input.value.trim();
+                if (name) {
+                    localStorage.setItem('facebingo_username', name);
+                    modal.classList.remove('active');
+                } else {
+                    input.style.borderColor = 'var(--clr-danger-dk)';
+                }
+            });
+            
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') saveBtn.click();
+            });
+        });
+    </script>
 
 </body>
 

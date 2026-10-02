@@ -58,6 +58,12 @@ async def submit(
 
     logger.info("Encounter submitted: '%s' met '%s' (letter=%s)", your_name, met_name, letter)
 
+    if not photo or not photo.size or photo.size == 0:
+        return JSONResponse(
+            status_code=HTTP_400_BAD_REQUEST,
+            content={"detail": "A photo is required. Please capture or upload a photo."},
+        )
+
     # ── Photo upload ──────────────────────────────────────────────────────────
     photo_url: str | None = None
     if photo and photo.size and photo.size > 0:
