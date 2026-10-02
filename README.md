@@ -22,7 +22,7 @@ poetry run uvicorn main:app --reload
 # potery run uvicorn <module>:<app-generator> --host <interface-ip> --port <port-number>
 poetry run uvicorn main:app --reload --host 0.0.0.0 --port $port
 ```
-> Open [https://facebingo-rosy.vercel.app](FaceBingo).
+> Open [FaceBingo](https://facebingo-rosy.vercel.app).
 
 ## Database Setup
 Set up the database by executing the sql script at `seed.sql` which consists of the required
