@@ -1,0 +1,373 @@
+openapi: "3.1.0"
+
+info:
+  title: FaceBingo API
+  version: "0.1.0"
+  description: |
+    Meet people, click a selfie, share a thought.
+
+    FaceBingo is an event icebreaker app with three pages:
+    - **Page 1** `/` — alphabet grid; participants tap their initial
+    - **Page 2** `/encounter/{letter}` — encounter form with photo capture/upload
+    - **Page 3** `/admin` — live statistics dashboard (Basic Auth protected)
+
+    ## Authentication
+    Admin-only endpoints use **HTTP Basic Auth**.
+    Credentials are configured via `ADMIN_USERNAME` / `ADMIN_PASSWORD` in `.env`.
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+tags:
+  - name: pages
+    description: Server-rendered HTML page routes
+  - name: submissions
+    description: Data submission and admin statistics
+  - name: debug
+    description: Configuration verification endpoints (admin only)
+  - name: health
+    description: Liveness probe
+
+paths:
+
+  /:
+    get:
+      operationId: index
+      tags: [pages]
+      summary: Alphabet grid (Page 1)
+      description: Renders the A-Z alphabet grid. Participants tap their initial to navigate to the encounter form for that letter.
+      responses:
+        "200":
+          description: HTML page — alphabet grid
+          content:
+            text/html:
+              example: "<html>...alphabet cards...</html>"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /encounter/{letter}:
+    get:
+      operationId: encounter
+      tags: [pages]
+      summary: Encounter form (Page 2)
+      description: Renders the encounter form for the selected letter. The letter is injected server-side into the form badge and placeholder text.
+      parameters:
+        - name: letter
+          in: path
+          required: true
+          description: Single uppercase letter A-Z (case-insensitive; normalised server-side)
+          schema:
+            type: string
+            pattern: "^[A-Za-z]$"
+            example: "A"
+      responses:
+        "200":
+          description: HTML page — encounter form
+          content:
+            text/html:
+              example: "<html>...encounter form...</html>"
+        "404":
+          description: Invalid letter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: "Invalid letter."
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /submit:
+    post:
+      operationId: submit
+      tags: [submissions]
+      summary: Submit an encounter
+      description: |
+        Accepts a multipart form with encounter details and an optional photo.
+        Validates all required fields and the photo MIME type/size.
+        Uploads the photo to Supabase Storage.
+        Inserts a row into the encounters Supabase table.
+        Renders and returns the success.html page.
+        Rate limited — default 20 requests per minute per IP.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [letter, your_name, met_name, thought]
+              properties:
+                letter:
+                  type: string
+                  description: The letter selected on Page 1 (A-Z)
+                  pattern: "^[A-Z]$"
+                  example: "A"
+                your_name:
+                  type: string
+                  description: Full name of the person submitting
+                  example: "Alice"
+                met_name:
+                  type: string
+                  description: Full name of the person they met
+                  example: "Bob"
+                thought:
+                  type: string
+                  description: A short thought or reflection about the encounter
+                  example: "We talked about distributed systems for 20 minutes!"
+                photo:
+                  type: string
+                  format: binary
+                  description: Optional photo (JPEG, PNG, or WebP). Max 5 MB.
+      responses:
+        "200":
+          description: Success page HTML rendered
+          content:
+            text/html:
+              example: "<html>...success page...</html>"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /admin:
+    get:
+      operationId: admin
+      tags: [pages]
+      summary: Admin dashboard (Page 3)
+      description: Renders the live statistics dashboard. Auto-refreshes encounter stats every 15 seconds via GET /admin/stats. Requires HTTP Basic Auth.
+      security:
+        - basicAuth: []
+      responses:
+        "200":
+          description: HTML admin dashboard
+          content:
+            text/html:
+              example: "<html>...admin dashboard...</html>"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /admin/stats:
+    get:
+      operationId: admin_stats
+      tags: [submissions]
+      summary: Live encounter statistics (JSON)
+      description: |
+        Returns aggregated statistics and the 20 most-recent encounter records.
+        Polled every 15 seconds by the admin dashboard JavaScript.
+        No auth required — the admin page itself is protected. Rate limited.
+      responses:
+        "200":
+          description: Encounter statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsResponse"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /debug/supa:
+    get:
+      operationId: debug_supabase
+      tags: [debug]
+      summary: Verify Supabase configuration
+      security:
+        - basicAuth: []
+      responses:
+        "200":
+          description: Supabase config presence flags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  supabase_url:      { type: boolean }
+                  supabase_anon_key: { type: boolean }
+                  supabase_bucket:   { type: boolean }
+                  supabase_table:    { type: boolean }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /debug/cors:
+    get:
+      operationId: debug_cors
+      tags: [debug]
+      summary: Verify CORS configuration
+      security:
+        - basicAuth: []
+      responses:
+        "200":
+          description: Current CORS allowed origins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cors:
+                    type: array
+                    items: { type: string }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /debug/rate_limit:
+    get:
+      operationId: debug_rate_limit
+      tags: [debug]
+      summary: Verify rate limit configuration
+      security:
+        - basicAuth: []
+      responses:
+        "200":
+          description: Current rate limit string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rate_limit: { type: string, example: "20/minute" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /debug/app:
+    get:
+      operationId: debug_app
+      tags: [debug]
+      summary: Verify application configuration
+      security:
+        - basicAuth: []
+      responses:
+        "200":
+          description: Current app-level config values
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  app_env:     { type: string, example: "development" }
+                  log_level:   { type: string, example: "INFO" }
+                  app_title:   { type: string, example: "FaceBingo" }
+                  app_version: { type: string, example: "0.1.0" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /health:
+    get:
+      operationId: health
+      tags: [health]
+      summary: Liveness probe
+      description: Returns 200 OK with the current app version. No auth, no rate limiting.
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:  { type: string, example: "ok" }
+                  version: { type: string, example: "0.1.0" }
+
+components:
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: HTTP Basic Auth. Username/password set via ADMIN_USERNAME / ADMIN_PASSWORD in .env.
+
+  schemas:
+
+    ErrorDetail:
+      type: object
+      description: Generic error response — never exposes internal stack traces.
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message safe to display to the user.
+      required: [detail]
+
+    EncounterRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        submitter_name:
+          type: string
+        met_name:
+          type: string
+        thought:
+          type: string
+        photo_url:
+          type: string
+          format: uri
+          nullable: true
+        letter:
+          type: string
+          pattern: "^[A-Z]$"
+        created_at:
+          type: string
+          format: date-time
+
+    StatsResponse:
+      type: object
+      properties:
+        total_encounters:
+          type: integer
+        unique_participants:
+          type: integer
+        most_active_letter:
+          type: string
+        letter_counts:
+          type: object
+          additionalProperties:
+            type: integer
+        recent:
+          type: array
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/EncounterRecord"
+
+  responses:
+
+    Unauthorized:
+      description: Missing or invalid HTTP Basic Auth credentials.
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+            example: "Basic"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: "Invalid credentials."
+
+    RateLimited:
+      description: Too many requests — client has exceeded the configured rate limit.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: "Too many requests. Please wait a moment and try again."
+
+    ServerError:
+      description: Unexpected server error — no internal detail is exposed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: "Something went wrong. Please try again."

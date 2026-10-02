@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FaceBingo — log the person you met whose name starts with {{ letter }}." />
+  <title>FaceBingo — Letter {{ letter }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="{{ url_for('static', path='/global.css') }}" />
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="FaceBingo home">
+        <div class="brand-icon">
+          <span class="icon icon--sm">grid_view</span>
+        </div>
+        <span class="brand-name">FaceBingo</span>
+        <span class="brand-tagline">Meet people, share a moment</span>
+      </a>
+      <div class="header-spacer"></div>
+      <nav class="header-nav" aria-label="Breadcrumb">
+        <a href="/" class="back-link" style="margin-bottom:0;">
+          <span class="icon icon--sm">grid_view</span>
+          Letters
+        </a>
+        <span style="color:var(--clr-muted); font-size:var(--text-xs); padding-inline:var(--sp-1);">/</span>
+        <span style="font-size:var(--text-sm); font-weight:600; color:var(--clr-text);">{{ letter }}</span>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main>
+    <div class="page-wrapper">
+      <div class="encounter-page">
+
+        <!-- Back link -->
+        <a href="/" class="back-link">
+          <span class="icon icon--sm">arrow_back</span>
+          Back to letters
+        </a>
+
+        <!-- Form card -->
+        <div class="form-card fade-up">
+
+          <!-- Card header -->
+          <div class="form-card__header">
+            <div class="form-card__badge">{{ letter }}</div>
+            <h1 class="form-card__title">Who did you meet?</h1>
+            <p class="form-card__subtitle">
+              Fill in the details below and capture a moment together.
+            </p>
+          </div>
+
+          <!-- Encounter form -->
+          <form id="encounter-form" action="/submit" method="post" enctype="multipart/form-data" novalidate>
+
+            <!-- Hidden letter field -->
+            <input type="hidden" name="letter" value="{{ letter }}" />
+
+            <!-- Your name -->
+            <div class="form-group">
+              <label class="form-label" for="your-name">
+                <span class="icon icon--sm">person</span>
+                Your name
+              </label>
+              <input class="form-input" type="text" id="your-name" name="your_name" placeholder="e.g. {{ letter }}nna"
+                autocomplete="given-name" required />
+            </div>
+
+            <!-- Person you met -->
+            <div class="form-group">
+              <label class="form-label" for="met-name">
+                <span class="icon icon--sm">group</span>
+                Person you met
+              </label>
+              <input class="form-input" type="text" id="met-name" name="met_name" placeholder="Their name"
+                autocomplete="off" required />
+            </div>
+
+            <!-- Thought / message -->
+            <div class="form-group">
+              <label class="form-label" for="thought">
+                <span class="icon icon--sm">chat_bubble</span>
+                Share a thought
+              </label>
+              <textarea class="form-textarea" id="thought" name="thought"
+                placeholder="What did you talk about? What was interesting about them?" required></textarea>
+            </div>
+
+            <!-- Photo widget -->
+            <div class="photo-widget" id="photo-widget">
+              <div class="photo-toggle">
+                <button type="button" class="photo-tab active" id="tab-camera" onclick="switchTab('camera')">
+                  <span class="icon icon--sm">photo_camera</span>
+                  Take a photo
+                </button>
+                <button type="button" class="photo-tab" id="tab-upload" onclick="switchTab('upload')">
+                  <span class="icon icon--sm">upload</span>
+                  Upload a photo
+                </button>
+              </div>
+
+              <!-- Camera panel -->
+              <div class="photo-panel active" id="panel-camera">
+                <video id="webcam-video" autoplay playsinline muted></video>
+                <canvas id="snap-canvas" style="display:none;"></canvas>
+                <img id="photo-preview" alt="Captured photo preview" />
+                <div class="photo-actions">
+                  <button type="button" class="btn btn--secondary btn--sm" id="btn-start-camera"
+                    onclick="startCamera()">
+                    <span class="icon icon--sm">videocam</span>
+                    Start camera
+                  </button>
+                  <button type="button" class="btn btn--primary btn--sm" id="btn-snap" onclick="snapPhoto()"
+                    style="display:none;">
+                    <span class="icon icon--sm">camera</span>
+                    Capture
+                  </button>
+                  <button type="button" class="btn btn--ghost btn--sm" id="btn-retake" onclick="retakePhoto()"
+                    style="display:none;">
+                    <span class="icon icon--sm">refresh</span>
+                    Retake
+                  </button>
+                </div>
+              </div>
+
+              <!-- Upload panel -->
+              <div class="photo-panel" id="panel-upload">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label" for="photo-file">
+                    <span class="icon icon--sm">image</span>
+                    Choose image (JPEG, PNG or WebP, max 5 MB)
+                  </label>
+                  <input class="form-input" type="file" id="photo-file" name="photo"
+                    accept="image/jpeg,image/png,image/webp" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Error banner (hidden by default) -->
+            <div id="form-error" style="display:none; margin-bottom: var(--sp-4);">
+              <p style="color: var(--clr-danger-dk); font-size: var(--text-sm); font-weight:500;" id="form-error-msg">
+              </p>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn--primary btn--full" id="btn-submit">
+              <span class="icon icon--sm">send</span>
+              Submit encounter
+            </button>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <span>FaceBingo &copy; 2026</span>
+  </footer>
+
+  <script>
+    /* Tab switching */
+    function switchTab(tab) {
+      const isCamera = tab === 'camera';
+      document.getElementById('tab-camera').classList.toggle('active', isCamera);
+      document.getElementById('tab-upload').classList.toggle('active', !isCamera);
+      document.getElementById('panel-camera').classList.toggle('active', isCamera);
+      document.getElementById('panel-upload').classList.toggle('active', !isCamera);
+
+      // Remove the captured-blob input when switching to upload, and vice-versa
+      const blobInput = document.getElementById('photo-blob-input');
+      if (blobInput) blobInput.remove();
+      if (!isCamera) stopCamera();
+    }
+
+    /* Webcam */
+    let stream = null;
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        const video = document.getElementById('webcam-video');
+        video.srcObject = stream;
+        document.getElementById('btn-start-camera').style.display = 'none';
+        document.getElementById('btn-snap').style.display = '';
+        document.getElementById('photo-preview').style.display = 'none';
+        video.style.display = 'block';
+      } catch (err) {
+        showError('Camera access denied. Please use the upload option instead.');
+        switchTab('upload');
+      }
+    }
+
+    function snapPhoto() {
+      const video = document.getElementById('webcam-video');
+      const canvas = document.getElementById('snap-canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+
+      // Show preview
+      const preview = document.getElementById('photo-preview');
+      preview.src = canvas.toDataURL('image/jpeg', 0.85);
+      preview.style.display = 'block';
+      video.style.display = 'none';
+
+      document.getElementById('btn-snap').style.display = 'none';
+      document.getElementById('btn-retake').style.display = '';
+
+      stopCamera();
+
+      // Convert canvas to Blob and attach as a hidden file input
+      canvas.toBlob(blob => {
+        const dt = new DataTransfer();
+        dt.items.add(new File([blob], 'selfie.jpg', { type: 'image/jpeg' }));
+
+        // Reuse upload file input so the form sends it as `photo`
+        const fileInput = document.getElementById('photo-file');
+        // If upload panel is hidden we still need the field; inject it
+        let hiddenPhoto = document.getElementById('photo-blob-input');
+        if (!hiddenPhoto) {
+          hiddenPhoto = document.createElement('input');
+          hiddenPhoto.type = 'file';
+          hiddenPhoto.name = 'photo';
+          hiddenPhoto.id = 'photo-blob-input';
+          hiddenPhoto.style.display = 'none';
+          document.getElementById('encounter-form').appendChild(hiddenPhoto);
+        }
+        hiddenPhoto.files = dt.files;
+      }, 'image/jpeg', 0.85);
+    }
+
+    function retakePhoto() {
+      const preview = document.getElementById('photo-preview');
+      preview.style.display = 'none';
+      const blobInput = document.getElementById('photo-blob-input');
+      if (blobInput) blobInput.remove();
+      document.getElementById('btn-snap').style.display = '';
+      document.getElementById('btn-retake').style.display = 'none';
+      startCamera();
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        const video = document.getElementById('webcam-video');
+        video.srcObject = null;
+      }
+    }
+
+    /* Form validation */
+    function showError(msg) {
+      const banner = document.getElementById('form-error');
+      document.getElementById('form-error-msg').textContent = msg;
+      banner.style.display = 'block';
+    }
+
+    document.getElementById('encounter-form').addEventListener('submit', function (e) {
+      const yourName = document.getElementById('your-name').value.trim();
+      const metName = document.getElementById('met-name').value.trim();
+      const thought = document.getElementById('thought').value.trim();
+
+      if (!yourName || !metName || !thought) {
+        e.preventDefault();
+        showError('Please fill in all three fields before submitting.');
+        return;
+      }
+
+      // Disable submit button to prevent double-submit
+      setTimeout(() => {
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="icon icon--sm">hourglass_empty</span> Submitting…';
+      }, 0);
+    });
+
+    /* Stop camera if user navigates away */
+    window.addEventListener('beforeunload', stopCamera);
+  </script>
+
+</body>
+
+</html>

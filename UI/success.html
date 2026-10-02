@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FaceBingo — encounter logged successfully." />
+  <title>FaceBingo — Logged!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="{{ url_for('static', path='/global.css') }}" />
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="FaceBingo home">
+        <div class="brand-icon">
+          <span class="icon icon--sm">grid_view</span>
+        </div>
+        <span class="brand-name">FaceBingo</span>
+        <span class="brand-tagline">Meet people, share a moment</span>
+      </a>
+      <div class="header-spacer"></div>
+      <nav class="header-nav">
+        <a href="/" class="btn btn--ghost btn--sm">
+          <span class="icon icon--sm">home</span>
+          Home
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-wrapper">
+      <div class="success-page fade-up">
+        <div class="success-card">
+          <div class="success-icon">&#x1F389;</div>
+          <h1 class="success-title">Nice one, {{ your_name }}!</h1>
+          <p class="success-body">
+            Your encounter with <strong>{{ met_name }}</strong> has been logged.
+            {% if photo_url %}
+            <br /><br />
+            <img src="{{ photo_url }}" alt="Photo of the encounter"
+              style="width:100%; border-radius: var(--radius-card); margin-top: var(--sp-2);" />
+            {% endif %}
+          </p>
+          <a href="/" class="btn btn--primary btn--full">
+            <span class="icon icon--sm">arrow_back</span>
+            Meet someone else
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <span>FaceBingo &copy; 2026</span>
+  </footer>
+
+</body>
+
+</html>
