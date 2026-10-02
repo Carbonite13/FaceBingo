@@ -19,7 +19,7 @@
         <div class="header-inner">
             <a href="/" class="brand" aria-label="FaceBingo home">
                 <div class="brand-icon">
-                    <span class="icon icon--sm">grid_view</span>
+                    <img src="{{ url_for('static', path='/FaceBingo Logo.png') }}" alt="FaceBingo Logo" />
                 </div>
                 <span class="brand-name">FaceBingo</span>
                 <span class="brand-tagline">Meet people, share a moment</span>
@@ -146,26 +146,36 @@
                 document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(savedProfile)) + "; path=/";
             }
 
-            saveBtn.addEventListener('click', async () => {
+            saveBtn.addEventListener('click', () => {
                 const name = inputName.value.trim();
                 const bio = inputBio.value.trim();
                 if (name) {
-                    try {
-                        const res = await fetch("/api/register", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ name, bio })
-                        });
-                        if(res.ok) {
-                            const data = await res.json();
-                            const profile = { id: data.id, name: data.name, bio: data.bio };
-                            localStorage.setItem('facebingo_profile', JSON.stringify(profile));
-                            document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(profile)) + "; path=/";
-                            closeModal();
-                        } else {
-                            console.error("Registration failed");
+                    // Instantly close modal and save optimistic profile state locally
+                    const tempProfile = { name, bio };
+                    localStorage.setItem('facebingo_profile', JSON.stringify(tempProfile));
+                    document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(tempProfile)) + "; path=/";
+                    closeModal();
+
+                    // Asynchronous background API call
+                    (async () => {
+                        try {
+                            const res = await fetch("/api/register", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ name, bio })
+                            });
+                            if (res.ok) {
+                                const data = await res.json();
+                                const profile = { id: data.id, name: data.name, bio: data.bio };
+                                localStorage.setItem('facebingo_profile', JSON.stringify(profile));
+                                document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(profile)) + "; path=/";
+                            } else {
+                                console.error("Asynchronous registration failed", await res.text());
+                            }
+                        } catch (e) {
+                            console.error("Asynchronous registration error", e);
                         }
-                    } catch(e) { console.error(e); }
+                    })();
                 } else {
                     inputName.style.borderColor = 'var(--clr-danger-dk)';
                 }
