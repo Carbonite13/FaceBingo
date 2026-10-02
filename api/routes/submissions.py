@@ -6,15 +6,19 @@ from __future__ import annotations
 
 import logging
 import string
+from typing import Literal
 
-from fastapi import APIRouter, File, Form, Request, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse
-from starlette.status import HTTP_400_BAD_REQUEST
+from fastapi import APIRouter, File, Form, Request, UploadFile, Depends
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_303_SEE_OTHER
 
-from api.dependencies import get_supabase, limiter
+from api.auth import require_admin
+from api.dependencies import get_supabase, limiter, get_participant_profile
+from api.state import state
 from config import config
 from core.storage import upload_photo
 from core.template import templates
+from core.domain import ParticipantProfile
 
 logger = logging.getLogger("facebingo.submissions")
 
@@ -30,21 +34,25 @@ _ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
 async def submit(
     request: Request,
     letter: str = Form(...),
-    your_name: str = Form(...),
+    your_name: str = Form(default=""),  # fallback but mostly ignored
     met_name: str = Form(...),
     thought: str = Form(...),
     photo: UploadFile | None = File(default=None),
+    profile: ParticipantProfile | None = Depends(get_participant_profile),
 ) -> HTMLResponse:
     """
     Save an encounter record and upload the photo to Supabase Storage.
     Redirects back to a success page on completion.
     """
     letter = letter.upper().strip()
-    your_name = your_name.strip()
+    your_name = profile.name if profile else (your_name.strip() or "Anonymous")
     met_name = met_name.strip()
     thought = thought.strip()
 
-    # ── Basic validation ──────────────────────────────────────────────────────
+    if not state.submissions_active:
+        return RedirectResponse(url="/timed-out", status_code=HTTP_303_SEE_OTHER)
+
+    # Basic validation 
     if letter not in _ALPHABETS:
         return JSONResponse(
             status_code=HTTP_400_BAD_REQUEST,
@@ -64,7 +72,7 @@ async def submit(
             content={"detail": "A photo is required. Please capture or upload a photo."},
         )
 
-    # ── Photo upload ──────────────────────────────────────────────────────────
+    # Photo upload 
     photo_url: str | None = None
     if photo and photo.size and photo.size > 0:
         if photo.content_type not in _ALLOWED_CONTENT_TYPES:
@@ -87,7 +95,7 @@ async def submit(
             letter=letter,
         )
 
-    # ── Save record to Supabase ───────────────────────────────────────────────
+    # Save record to Supabase 
     db = get_supabase()
     payload = {
         "submitter_name": your_name,
@@ -99,7 +107,7 @@ async def submit(
     db.table(config.active_table).insert(payload).execute()
     logger.info("Encounter record saved for '%s'", your_name)
 
-    # ── Render success page ───────────────────────────────────────────────────
+    # Render success page 
     return templates.TemplateResponse(
         request=request,
         name="success.html",
@@ -146,3 +154,57 @@ async def admin_stats(request: Request) -> JSONResponse:
     }
 
     return JSONResponse(content=stats)
+
+
+@router.delete("/admin/encounters/{encounter_id}", name="admin_delete_encounter")
+async def admin_delete_encounter(
+    encounter_id: str,
+    _: str = Depends(require_admin),
+) -> JSONResponse:
+    """
+    Admin endpoint to delete a specific encounter and its associated photo.
+    """
+    logger.info("Admin deleting encounter %s", encounter_id)
+    db = get_supabase()
+
+    # Try to delete the photo from storage if it exists
+    try:
+        result = db.table(config.active_table).select("photo_url").eq("id", encounter_id).execute()
+        if result.data and result.data[0].get("photo_url"):
+            photo_url = result.data[0]["photo_url"]
+            bucket_prefix = f"/storage/v1/object/public/{config.active_bucket}/"
+            if bucket_prefix in photo_url:
+                path = photo_url.split(bucket_prefix)[1]
+                db.storage.from_(config.active_bucket).remove([path])
+    except Exception as e:
+        logger.warning("Failed to delete photo from storage during encounter deletion: %s", e)
+
+    # Delete the record from the database
+    db.table(config.active_table).delete().eq("id", encounter_id).execute()
+    return JSONResponse(content={"status": "ok"})
+
+
+@router.get("/admin/status", name="admin_get_status")
+async def admin_get_status(_: str = Depends(require_admin)) -> JSONResponse:
+    return JSONResponse(content={
+        "active": state.submissions_active,
+        "registration_required": state.registration_required
+    })
+
+
+@router.post("/admin/status", name="admin_set_status")
+async def admin_set_status(
+    request: Request,
+    _: str = Depends(require_admin)
+) -> JSONResponse:
+    data = await request.json()
+    if "active" in data:
+        state.submissions_active = bool(data["active"])
+        logger.info(f"Admin toggled submissions active status to {state.submissions_active}")
+    if "registration_required" in data:
+        state.registration_required = bool(data["registration_required"])
+        logger.info(f"Admin toggled registration required to {state.registration_required}")
+    return JSONResponse(content={
+        "active": state.submissions_active,
+        "registration_required": state.registration_required
+    })

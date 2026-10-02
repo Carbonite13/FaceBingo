@@ -25,6 +25,9 @@
                 <span class="brand-tagline">Meet people, share a moment</span>
             </a>
             <div class="header-spacer"></div>
+            <button class="btn btn--ghost btn--sm" id="btn-edit-profile" aria-label="Edit Profile" onclick="document.getElementById('welcome-modal').classList.add('active');">
+                <span class="icon icon--sm">account_circle</span>
+            </button>
         </div>
     </header>
 
@@ -69,41 +72,65 @@
     <div class="modal-overlay" id="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-content">
             <h2 class="modal-title" id="modal-title">Welcome to FaceBingo!</h2>
-            <p class="modal-desc">Please enter your name to get started. This will be saved on your device for this session.</p>
-            <div class="form-group" style="margin-bottom: var(--sp-4);">
+            <p class="modal-desc">Please set up your profile to get started.</p>
+            <div class="form-group" style="margin-bottom: var(--sp-2);">
                 <label class="form-label" for="onboarding-name">Your Name</label>
                 <input class="form-input" type="text" id="onboarding-name" placeholder="e.g. Alice" />
             </div>
+            <div class="form-group" style="margin-bottom: var(--sp-4);">
+                <label class="form-label" for="onboarding-bio">A short bio</label>
+                <textarea class="form-textarea" id="onboarding-bio" placeholder="e.g. I love hiking!" rows="2"></textarea>
+            </div>
             <button class="btn btn--primary btn--full" id="btn-save-name">
                 <span class="icon icon--sm">check</span>
-                Save Name
+                Save Profile
             </button>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const savedName = localStorage.getItem('facebingo_username');
+            const savedProfileString = localStorage.getItem('facebingo_profile');
+            let savedProfile = null;
+            try {
+                if(savedProfileString) savedProfile = JSON.parse(savedProfileString);
+            } catch(e) {}
+
+            // Legacy fallback
+            if (!savedProfile) {
+                const legacyName = localStorage.getItem('facebingo_username');
+                if (legacyName) savedProfile = { name: legacyName, bio: '' };
+            }
+
             const modal = document.getElementById('welcome-modal');
-            const input = document.getElementById('onboarding-name');
+            const inputName = document.getElementById('onboarding-name');
+            const inputBio = document.getElementById('onboarding-bio');
             const saveBtn = document.getElementById('btn-save-name');
 
-            if (!savedName) {
+            if (!savedProfile) {
                 modal.classList.add('active');
-                input.focus();
+                inputName.focus();
+            } else {
+                inputName.value = savedProfile.name || '';
+                inputBio.value = savedProfile.bio || '';
+                // Ensure cookie is synced on load
+                document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(savedProfile)) + "; path=/";
             }
 
             saveBtn.addEventListener('click', () => {
-                const name = input.value.trim();
+                const name = inputName.value.trim();
+                const bio = inputBio.value.trim();
                 if (name) {
-                    localStorage.setItem('facebingo_username', name);
+                    const profile = { name, bio };
+                    localStorage.setItem('facebingo_profile', JSON.stringify(profile));
+                    document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(profile)) + "; path=/";
                     modal.classList.remove('active');
                 } else {
-                    input.style.borderColor = 'var(--clr-danger-dk)';
+                    inputName.style.borderColor = 'var(--clr-danger-dk)';
                 }
             });
             
-            input.addEventListener('keypress', (e) => {
+            inputName.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') saveBtn.click();
             });
         });

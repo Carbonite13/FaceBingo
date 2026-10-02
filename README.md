@@ -89,8 +89,13 @@ See [`.env.example`](.env.example) for the full list with descriptions.
 | `GET` | `/` | — | Page 1 — alphabet grid |
 | `GET` | `/encounter/{letter}` | — | Page 2 — encounter form |
 | `POST` | `/submit` | — | Save encounter + upload photo |
+| `GET` | `/timed-out` | — | Page for paused submissions |
+| `GET` | `/public` | — | Page 4 — public live event feed |
 | `GET` | `/admin` | Basic Auth | Page 3 — admin dashboard |
 | `GET` | `/admin/stats` | — | JSON stats for dashboard polling |
+| `GET` | `/admin/status` | Basic Auth | Get submissions status |
+| `POST` | `/admin/status` | Basic Auth | Toggle submissions status |
+| `DELETE` | `/admin/encounters/{id}` | Basic Auth | Delete an encounter record and its photo |
 | `GET` | `/debug/*` | Basic Auth | Config verification endpoints |
 | `GET` | `/health` | — | Liveness probe |
 
