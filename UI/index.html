@@ -70,7 +70,10 @@
 
     <!-- Welcome Modal -->
     <div class="modal-overlay" id="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-content">
+        <div class="modal-content" style="position: relative;">
+            <button class="btn btn--ghost btn--sm" id="btn-cancel-modal" aria-label="Close modal" style="position: absolute; top: var(--sp-4); right: var(--sp-4); padding: var(--sp-1); border: none;">
+                <span class="icon icon--sm">close</span>
+            </button>
             <h2 class="modal-title" id="modal-title">Welcome to FaceBingo!</h2>
             <p class="modal-desc">Please set up your profile to get started.</p>
             <div class="form-group" style="margin-bottom: var(--sp-2);">
@@ -81,10 +84,15 @@
                 <label class="form-label" for="onboarding-bio">A short bio</label>
                 <textarea class="form-textarea" id="onboarding-bio" placeholder="e.g. I love hiking!" rows="2"></textarea>
             </div>
-            <button class="btn btn--primary btn--full" id="btn-save-name">
-                <span class="icon icon--sm">check</span>
-                Save Profile
-            </button>
+            <div style="display: flex; gap: var(--sp-2);">
+                <button class="btn btn--ghost flex-1" id="btn-cancel-modal-bottom" style="flex: 1;">
+                    Cancel
+                </button>
+                <button class="btn btn--primary flex-1" id="btn-save-name" style="flex: 1;">
+                    <span class="icon icon--sm">check</span>
+                    Save Profile
+                </button>
+            </div>
         </div>
     </div>
 
@@ -106,6 +114,27 @@
             const inputName = document.getElementById('onboarding-name');
             const inputBio = document.getElementById('onboarding-bio');
             const saveBtn = document.getElementById('btn-save-name');
+            const cancelBtnTop = document.getElementById('btn-cancel-modal');
+            const cancelBtnBottom = document.getElementById('btn-cancel-modal-bottom');
+
+            const closeModal = () => {
+                modal.classList.remove('active');
+            };
+
+            cancelBtnTop?.addEventListener('click', closeModal);
+            cancelBtnBottom?.addEventListener('click', closeModal);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
 
             if (!savedProfile) {
                 modal.classList.add('active');
@@ -132,7 +161,7 @@
                             const profile = { id: data.id, name: data.name, bio: data.bio };
                             localStorage.setItem('facebingo_profile', JSON.stringify(profile));
                             document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(profile)) + "; path=/";
-                            modal.classList.remove('active');
+                            closeModal();
                         } else {
                             console.error("Registration failed");
                         }

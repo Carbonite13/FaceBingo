@@ -467,11 +467,21 @@ main {
 			font-weight: 400;
 		}
 
+		&::file-selector-button,
+		&::file-selector-button:focus {
+			visibility: hidden;
+		}
+
 		&:focus {
 			border-color: var(--clr-secondary-dk);
 			background: var(--clr-surface);
 			box-shadow: var(--shadow-focus);
 		}
+	}
+
+	& .form-input[type="file"] {
+		background: var(--clr-primary);
+		border-color: var(--clr-primary-dk);
 	}
 
 	& .form-textarea {

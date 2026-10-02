@@ -28,7 +28,8 @@
           <span class="icon icon--sm">home</span>
           Participant view
         </a>
-        <span style="font-size:var(--text-xs); color:var(--clr-muted); display:flex; align-items:center; gap:var(--sp-1);">
+        <span
+          style="font-size:var(--text-xs); color:var(--clr-muted); display:flex; align-items:center; gap:var(--sp-1);">
           <span class="icon icon--sm">lock</span> Admin
         </span>
       </nav>
@@ -41,14 +42,14 @@
 
         <!-- Controls -->
         <div style="margin-bottom: var(--sp-4); display: flex; justify-content: flex-end; gap: var(--sp-2);">
-            <button class="btn btn--secondary" id="btn-toggle-reg" onclick="toggleRegistration()">
-                <span class="icon icon--sm" id="icon-reg">admin_panel_settings</span> 
-                <span id="text-reg">Require Registration</span>
-            </button>
-            <button class="btn btn--danger" id="btn-toggle-status" onclick="toggleSubmissions()">
-                <span class="icon icon--sm" id="icon-status">pause_circle</span> 
-                <span id="text-status">Pause Submissions</span>
-            </button>
+          <button class="btn btn--secondary" id="btn-toggle-reg" onclick="toggleRegistration()">
+            <span class="icon icon--sm" id="icon-reg">admin_panel_settings</span>
+            <span id="text-reg">Require Registration</span>
+          </button>
+          <button class="btn btn--danger" id="btn-toggle-status" onclick="toggleSubmissions()">
+            <span class="icon icon--sm" id="icon-status">pause_circle</span>
+            <span id="text-status">Pause Submissions</span>
+          </button>
         </div>
 
         <!-- Stats grid -->
@@ -88,7 +89,8 @@
             <span class="icon icon--sm">people</span>
             Registered Users
           </h2>
-          <div class="stat-grid" id="users-container" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+          <div class="stat-grid" id="users-container"
+            style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
             <p style="color: var(--clr-muted); font-size: var(--text-sm);">Loading...</p>
           </div>
         </div>
@@ -115,13 +117,17 @@
   <!-- Card Detail Modal -->
   <div class="modal-overlay" id="card-modal" role="dialog" aria-modal="true" aria-labelledby="card-modal-title">
     <div class="modal-content" style="display:flex;flex-direction:column;align-items:center;text-align:center;">
-      <div id="card-modal-photo-container" style="width:100%;aspect-ratio:1;background:var(--clr-surface-2);border-radius:var(--radius-sm);margin-bottom:var(--sp-4);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <div id="card-modal-photo-container"
+        style="width:100%;aspect-ratio:1;background:var(--clr-surface-2);border-radius:var(--radius-sm);margin-bottom:var(--sp-4);display:flex;align-items:center;justify-content:center;overflow:hidden;">
         <!-- Image goes here -->
       </div>
-      <h2 class="modal-title" id="card-modal-title" style="margin-bottom:var(--sp-2);display:flex;align-items:center;justify-content:center;gap:var(--sp-2);"></h2>
+      <h2 class="modal-title" id="card-modal-title"
+        style="margin-bottom:var(--sp-2);display:flex;align-items:center;justify-content:center;gap:var(--sp-2);"></h2>
       <p class="modal-desc" id="card-modal-desc" style="color:var(--clr-text-2);"></p>
-      <div style="font-size:var(--text-xs);color:var(--clr-muted);margin-bottom:var(--sp-4);" id="card-modal-time"></div>
-      <button class="btn btn--primary btn--full" onclick="document.getElementById('card-modal').classList.remove('active')">
+      <div style="font-size:var(--text-xs);color:var(--clr-muted);margin-bottom:var(--sp-4);" id="card-modal-time">
+      </div>
+      <button class="btn btn--primary btn--full"
+        onclick="document.getElementById('card-modal').classList.remove('active')">
         Close
       </button>
       <button class="btn btn--danger btn--full" style="margin-top:var(--sp-2);" onclick="deleteRecord()">
@@ -131,7 +137,7 @@
   </div>
 
   <script>
-    /* ── Admin stats poller ─────────────────────────────────────────────── */
+    /* Admin stats poller */
     let recentData = [];
     let currentRecordId = null;
     let submissionsActive = true;
@@ -149,9 +155,9 @@
         recentData = data.recent || [];
 
         // Update stat cards
-        document.getElementById('stat-total').textContent        = data.total_encounters ?? '—';
+        document.getElementById('stat-total').textContent = data.total_encounters ?? '—';
         document.getElementById('stat-participants').textContent = data.unique_participants ?? '—';
-        document.getElementById('stat-letter').textContent       = data.most_active_letter ?? '—';
+        document.getElementById('stat-letter').textContent = data.most_active_letter ?? '—';
 
         // Render users
         renderUsers(data.users || []);
@@ -166,9 +172,9 @@
         feed.innerHTML = recentData.map((row, index) => `
           <div class="encounter-card" style="cursor:pointer;" onclick="openCardModal(${index})">
             ${row.photo_url
-              ? `<img class="encounter-card__photo" src="${escHtml(row.photo_url)}" alt="Photo" loading="lazy" />`
-              : `<div class="encounter-card__photo"><span class="icon icon--xl">photo_camera</span></div>`
-            }
+            ? `<img class="encounter-card__photo" src="${escHtml(row.photo_url)}" alt="Photo" loading="lazy" />`
+            : `<div class="encounter-card__photo"><span class="icon icon--xl">photo_camera</span></div>`
+          }
             <div class="encounter-card__body">
               <div class="encounter-card__names">
                 <span class="encounter-card__letter">${escHtml(row.letter)}</span>
@@ -187,25 +193,25 @@
     }
 
     function openCardModal(index) {
-        const row = recentData[index];
-        if (!row) return;
-        currentRecordId = row.id;
+      const row = recentData[index];
+      if (!row) return;
+      currentRecordId = row.id;
 
-        const photoContainer = document.getElementById('card-modal-photo-container');
-        if (row.photo_url) {
-            photoContainer.innerHTML = `<img src="${escHtml(row.photo_url)}" alt="Photo" style="width:100%;height:100%;object-fit:cover;" />`;
-        } else {
-            photoContainer.innerHTML = `<span class="icon icon--xl" style="color:var(--clr-muted);font-size:3rem;">photo_camera</span>`;
-        }
+      const photoContainer = document.getElementById('card-modal-photo-container');
+      if (row.photo_url) {
+        photoContainer.innerHTML = `<img src="${escHtml(row.photo_url)}" alt="Photo" style="width:100%;height:100%;object-fit:cover;" />`;
+      } else {
+        photoContainer.innerHTML = `<span class="icon icon--xl" style="color:var(--clr-muted);font-size:3rem;">photo_camera</span>`;
+      }
 
-        document.getElementById('card-modal-title').innerHTML = `
+      document.getElementById('card-modal-title').innerHTML = `
             <span class="encounter-card__letter" style="display:inline-flex;align-items:center;justify-content:center;width:1.8rem;height:1.8rem;background:var(--clr-primary);border-radius:var(--radius-sm);font-size:var(--text-sm);font-weight:700;color:var(--clr-text);">${escHtml(row.letter)}</span>
             ${escHtml(row.submitter_name)} <span class="icon icon--sm" style="color:var(--clr-muted)">arrow_forward</span> ${escHtml(row.met_name)}
         `;
-        document.getElementById('card-modal-desc').textContent = row.thought || '';
-        document.getElementById('card-modal-time').textContent = formatTime(row.created_at);
+      document.getElementById('card-modal-desc').textContent = row.thought || '';
+      document.getElementById('card-modal-time').textContent = formatTime(row.created_at);
 
-        document.getElementById('card-modal').classList.add('active');
+      document.getElementById('card-modal').classList.add('active');
     }
 
     function escHtml(str) {
@@ -297,7 +303,7 @@
       const btnStatus = document.getElementById('btn-toggle-status');
       const iconStatus = document.getElementById('icon-status');
       const textStatus = document.getElementById('text-status');
-      
+
       if (submissionsActive) {
         btnStatus.className = 'btn btn--danger';
         iconStatus.textContent = 'pause_circle';
@@ -311,7 +317,7 @@
       const btnReg = document.getElementById('btn-toggle-reg');
       const iconReg = document.getElementById('icon-reg');
       const textReg = document.getElementById('text-reg');
-      
+
       if (registrationRequired) {
         btnReg.className = 'btn btn--secondary';
         iconReg.textContent = 'lock';
@@ -335,13 +341,13 @@
     async function deleteRecord() {
       if (!currentRecordId) return;
       if (!confirm("Are you sure you want to delete this encounter?")) return;
-      
+
       try {
         const res = await fetch(`/admin/encounters/${currentRecordId}`, {
           method: 'DELETE',
           credentials: 'same-origin', // sends Basic Auth
         });
-        
+
         if (res.ok) {
           document.getElementById('card-modal').classList.remove('active');
           loadStats();
@@ -355,10 +361,10 @@
     }
 
     // Close modal if clicked outside content
-    document.getElementById('card-modal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.classList.remove('active');
-        }
+    document.getElementById('card-modal').addEventListener('click', function (e) {
+      if (e.target === this) {
+        this.classList.remove('active');
+      }
     });
 
     // Initial load + poll every 15 s
