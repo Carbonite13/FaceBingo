@@ -1,6 +1,6 @@
 # FaceBingo
-#### Meet people, click a selfie, share a thought
-A lightweight event icebreaker — participants pick their initial, log who they met, share a thought, and snap a selfie.
+#### Meet People, Click a Selfie, Share a Thought
+A lightweight event icebreaker where the participants pick their initial, log who they met, share a thought, and snap a selfie.
 
 ## Quick Start
 
@@ -14,14 +14,14 @@ cp .env.example .env
 # Run the DDL against your Supabase project (see section below)
 # Start the dev server
 poetry run uvicorn main:app --reload
+
+# IF interface needs to be accessible across the network,
+# use the flags --host and --port
+poetry run uvicorn main:app --reload --host 0.0.0.0 --port $port
 ```
-Open [http://localhost:8000](http://localhost:8000).
+> Open [https://facebingo-rosy.vercel.app](FaceBingo - App).
 
-## Database Setup (Supabase DDL)
-
-Run the following SQL in the **Supabase SQL Editor**
-(Dashboard → SQL Editor → New query):
-
+## Database Setup
 ```sql
 -- encounters table
 CREATE TABLE IF NOT EXISTS public.encounters (
@@ -51,27 +51,18 @@ CREATE POLICY "anon_insert" ON public.encounters
     FOR INSERT TO anon
     WITH CHECK (true);
 
--- Allow anonymous reads of own rows only (by submitter_name — event-scale trust)
+-- Allow anonymous reads of own rows only (by submitter_name - event-scale trust)
 -- Tighten this with auth.uid() if you add Supabase Auth later.
 CREATE POLICY "anon_select_own" ON public.encounters
     FOR SELECT TO anon
     USING (true);
-```
 
-## Storage Setup (Supabase Bucket)
-
-1. Go to **Supabase Dashboard → Storage → New bucket**
-2. Name it `facebingo-photos` (or whatever you set in `SUPABASE_BUCKET`)
-3. Set the bucket to **Public** — this enables direct CDN URLs for uploaded photos.
-4. **CRITICAL: Enable Anonymous Uploads**  
-   By default, public buckets allow anonymous *reads*, but block anonymous *writes*. Run this SQL to allow anyone to upload photos:
-
-```sql
 -- Allow anonymous uploads to the photos bucket
 CREATE POLICY "Allow anonymous uploads"
 ON storage.objects FOR INSERT TO anon
 WITH CHECK (
-    bucket_id = 'facebingo-photos' -- Change if using a different bucket name
+    -- Change if using a different bucket name
+    bucket_id = 'facebingo-photos' 
 );
 ```
 
