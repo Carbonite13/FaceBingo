@@ -1,11 +1,5 @@
 """
 FaceBingo — application entry point.
-
-Assembles the FastAPI app, registers middleware, mounts static files,
-and includes all routers. Import order:
-  1. Logging (must be first so all subsequent imports emit logs)
-  2. App + middleware
-  3. Routers
 """
 
 from __future__ import annotations
@@ -43,7 +37,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Middleware (applied in reverse order — last added = outermost) 
+# Middleware 
 app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
@@ -61,7 +55,9 @@ register_error_handlers(app)
 
 #  Static files 
 _STATIC_DIR = Path(__file__).parent / "UI" / "static/"
+_SCRIPT_DIR = Path(__file__).parent / "UI" / "scripts"
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+app.mount("/scripts", StaticFiles(directory=str(_SCRIPT_DIR)), name="scripts")
 
 #  Routers 
 app.include_router(pages_router)         # GET /  · /encounter/{letter} · /admin

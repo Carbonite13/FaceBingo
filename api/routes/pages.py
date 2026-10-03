@@ -78,6 +78,7 @@ async def users_page(request: Request) -> HTMLResponse:
     )
 
 
+
 @router.get("/timed-out", response_class=HTMLResponse, name="timed_out")
 async def timed_out(request: Request) -> HTMLResponse:
     """Page for timed out / paused state."""
