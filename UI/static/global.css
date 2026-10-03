@@ -223,6 +223,7 @@ main {
 				width: 100%;
 				height: 100%;
 				object-fit: contain;
+				filter: invert(100%);
 			}
 		}
 
@@ -465,6 +466,7 @@ main {
 			box-shadow var(--dur-fast) ease,
 			background var(--dur-fast) ease;
 		outline: none;
+		resize: none;
 
 		&::placeholder {
 			color: var(--clr-muted);
@@ -663,6 +665,11 @@ main {
 	grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
 	gap: var(--sp-4);
 	margin-bottom: var(--sp-8);
+
+	p {
+		color: var(--clr-muted);
+		font-size: var(--text-xs);
+	}
 
 	@media (max-width: 480px) {
 		grid-template-columns: 1fr;

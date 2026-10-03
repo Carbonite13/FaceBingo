@@ -2,8 +2,6 @@
 Generic error handlers — never expose internal details to the client.
 """
 
-from __future__ import annotations
-
 import logging
 
 from fastapi import FastAPI, Request
@@ -53,7 +51,7 @@ def register_error_handlers(app: FastAPI) -> None:
     async def _validation_handler(request: Request, exc: ValidationError) -> JSONResponse:
         logger.info("Validation error on %s: %s", request.url.path, exc)
         return JSONResponse(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             content={"detail": _VALIDATION_MSG},
         )
 
@@ -63,6 +61,14 @@ def register_error_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             content={"detail": _VALIDATION_MSG},
+        )
+
+    @app.exception_handler(OSError)
+    async def _os_error_handler(request: Request, exc: OSError) -> JSONResponse:
+        logger.error("OS error on %s %s: %s", request.method, request.url.path, exc)
+        return JSONResponse(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": _GENERIC_MSG},
         )
 
     @app.exception_handler(Exception)
