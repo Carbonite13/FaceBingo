@@ -220,3 +220,5 @@ __marimo__/
 
 # poetry lock
 poetry.lock
+
+.claude
