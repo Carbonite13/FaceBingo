@@ -1,0 +1,4 @@
+<header class="site-header"><div class="header-inner">
+  <a href="/" class="brand" aria-label="FaceBingo home"><img src="{{ url_for('static', path='/FaceBingo Logo.png') }}" alt=""><span>FaceBingo</span>{% if tagline %}<small>{{ tagline }}</small>{% endif %}</a>
+  <nav class="header-nav">{% block header_actions %}<a href="/" class="btn btn--ghost">Home</a>{% endblock %}</nav>
+</div></header>

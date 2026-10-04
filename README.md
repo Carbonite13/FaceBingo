@@ -66,3 +66,11 @@ See [`.env.example`](.env.example) for the full list with descriptions.
 | `GET` | `/health` | — | Liveness probe |
 
 Further documentation on routes can be found at `docs/apidocs.yaml`
+
+## Project structure
+
+The backend separates FastAPI routes, request schemas, application services,
+repositories, and infrastructure helpers. The frontend uses shared Jinja
+layouts in `UI/templates`, global design tokens in `UI/static/global.css`,
+page layout rules in `UI/static/pages.css`, and external page scripts in
+`UI/scripts`. See [architecture notes](docs/architecture.md).

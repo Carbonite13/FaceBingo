@@ -1,196 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description"
-        content="FaceBingo — meet people at the event. Pick the first letter of your name to get started." />
-    <title>FaceBingo — Meet People, Share a Moment</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="{{ url_for('static', path='/global.css') }}" />
-    <link rel="shortcut icon" href="{{ url_for('static', path='/FaceBingo Logo.png') }}" type="image/x-icon">
-</head>
-
-<body>
-
-    <!-- Header -->
-    <header class="site-header">
-        <div class="header-inner">
-            <a href="/" class="brand" aria-label="FaceBingo home">
-                <div class="brand-icon">
-                    <img src="{{ url_for('static', path='/FaceBingo Logo.png') }}" alt="FaceBingo Logo" />
-                </div>
-                <span class="brand-name">FaceBingo</span>
-                <span class="brand-tagline">Meet people, share a moment</span>
-            </a>
-            <div class="header-spacer"></div>
-            <button class="btn btn--ghost btn--sm" id="btn-edit-profile" aria-label="Edit Profile"
-                onclick="document.getElementById('welcome-modal').classList.add('active');">
-                <span class="icon icon--sm">account_circle</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main -->
-    <main>
-        <div class="page-wrapper">
-
-            <!-- Hero -->
-            <section class="hero fade-up">
-                <div class="hero-eyebrow">
-                    <span class="icon icon--sm">waving_hand</span>
-                    Let's get started
-                </div>
-                <h1 class="hero-title">Pick the first letter<br>of their name</h1>
-                <p class="hero-subtitle">
-                    Tap their initial below, then tell us about something you guys shared.
-                </p>
-            </section>
-
-            <!-- Alphabet grid -->
-            <section class="alphabet-section" aria-label="Alphabet letter selection">
-                <div class="alphabet-grid" role="list">
-                    {% for letter in alphabets %}
-                    <a href="/encounter/{{ letter }}" class="letter-card" role="listitem"
-                        aria-label="My name starts with {{ letter }}" id="letter-{{ letter }}">
-                        <span class="letter-card__char">{{ letter }}</span>
-                        <span class="letter-card__label"></span>
-                    </a>
-                    {% endfor %}
-                </div>
-            </section>
-
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <span>FaceBingo &copy; 2026</span>
-    </footer>
-
-    <!-- Welcome Modal -->
-    <div class="modal-overlay" id="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-content" style="position: relative;">
-            <button class="btn btn--ghost btn--sm" id="btn-cancel-modal" aria-label="Close modal"
-                style="position: absolute; top: var(--sp-4); right: var(--sp-4); padding: var(--sp-1); border: none;">
-                <span class="icon icon--sm">close</span>
-            </button>
-            <h2 class="modal-title" id="modal-title">Welcome to FaceBingo!</h2>
-            <p class="modal-desc">Please set up your profile to get started.</p>
-            <div class="form-group" style="margin-bottom: var(--sp-2);">
-                <label class="form-label" for="onboarding-name">Your Name</label>
-                <input class="form-input" type="text" id="onboarding-name" placeholder="e.g. Alice" />
-            </div>
-            <div class="form-group" style="margin-bottom: var(--sp-4);">
-                <label class="form-label" for="onboarding-bio">A short bio</label>
-                <textarea class="form-textarea" id="onboarding-bio" placeholder="e.g. I love hiking!"
-                    rows="2"></textarea>
-            </div>
-            <div style="display: flex; gap: var(--sp-2);">
-                <button class="btn btn--ghost flex-1" id="btn-cancel-modal-bottom" style="flex: 1;">
-                    Cancel
-                </button>
-                <button class="btn btn--primary flex-1" id="btn-save-name" style="flex: 1;">
-                    <span class="icon icon--sm">check</span>
-                    Save Profile
-                </button>
-            </div>
-        </div>
+{% extends "layout.html" %}
+{% set title = "FaceBingo — Meet People" %}{% set tagline = "Meet people, share a moment" %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', path='/pages.css') }}">{% endblock %}
+{% block content %}
+<div class="page-wrapper">
+    <section class="hero">
+        <h1>Meet someone new</h1>
+        <p>Choose the first letter of your name to begin.</p>
+    </section>
+    <section class="letter-grid" aria-label="Alphabet">{% for letter in alphabets %}<a href="/encounter/{{ letter }}"
+            class="letter-card">{{ letter }}</a>{% endfor %}</section>
+</div>
+<div class="modal-overlay" id="profile-modal" aria-modal="true" role="dialog">
+    <div class="modal-content">
+        <h2>Welcome!</h2>
+        <form id="profile-form">
+            <div class="form-group"><label for="profile-name">Name</label><input class="form-input" id="profile-name"
+                    required maxlength="100"></div>
+            <div class="form-group"><label for="profile-bio">Bio</label><textarea class="form-textarea" id="profile-bio"
+                    maxlength="500"></textarea></div><button class="btn btn--primary" type="submit">Continue</button>
+        </form>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedProfileString = localStorage.getItem('facebingo_profile');
-            let savedProfile = null;
-            try {
-                if (savedProfileString) savedProfile = JSON.parse(savedProfileString);
-            } catch (e) { }
-
-            // Legacy fallback
-            if (!savedProfile) {
-                const legacyName = localStorage.getItem('facebingo_username');
-                if (legacyName) savedProfile = { name: legacyName, bio: '' };
-            }
-
-            const modal = document.getElementById('welcome-modal');
-            const inputName = document.getElementById('onboarding-name');
-            const inputBio = document.getElementById('onboarding-bio');
-            const saveBtn = document.getElementById('btn-save-name');
-            const cancelBtnTop = document.getElementById('btn-cancel-modal');
-            const cancelBtnBottom = document.getElementById('btn-cancel-modal-bottom');
-
-            const closeModal = () => {
-                modal.classList.remove('active');
-            };
-
-            cancelBtnTop?.addEventListener('click', closeModal);
-            cancelBtnBottom?.addEventListener('click', closeModal);
-
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
-
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('active')) {
-                    closeModal();
-                }
-            });
-
-            if (!savedProfile) {
-                modal.classList.add('active');
-                inputName.focus();
-            } else {
-                inputName.value = savedProfile.name || '';
-                inputBio.value = savedProfile.bio || '';
-                // Ensure cookie is synced on load
-                document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(savedProfile)) + "; path=/";
-            }
-
-            saveBtn.addEventListener('click', () => {
-                const name = inputName.value.trim();
-                const bio = inputBio.value.trim();
-                if (name) {
-                    // Instantly close modal and save optimistic profile state locally
-                    const tempProfile = { name, bio };
-                    localStorage.setItem('facebingo_profile', JSON.stringify(tempProfile));
-                    document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(tempProfile)) + "; path=/";
-                    closeModal();
-
-                    // Asynchronous background API call
-                    (async () => {
-                        try {
-                            const res = await fetch("/api/register", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ name, bio })
-                            });
-                            if (res.ok) {
-                                const data = await res.json();
-                                const profile = { id: data.id, name: data.name, bio: data.bio };
-                                localStorage.setItem('facebingo_profile', JSON.stringify(profile));
-                                document.cookie = "facebingo_profile=" + encodeURIComponent(JSON.stringify(profile)) + "; path=/";
-                            } else {
-                                console.error("Asynchronous registration failed", await res.text());
-                            }
-                        } catch (e) {
-                            console.error("Asynchronous registration error", e);
-                        }
-                    })();
-                } else {
-                    inputName.style.borderColor = 'var(--clr-danger-dk)';
-                }
-            });
-
-            inputName.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') saveBtn.click();
-            });
-        });
-    </script>
-
-</body>
-
-</html>
+</div>{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('scripts', path='/profile.js') }}" defer></script>{% endblock %}

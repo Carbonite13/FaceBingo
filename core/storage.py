@@ -52,3 +52,21 @@ def upload_photo(
     public_url: str = client.storage.from_(config.active_bucket).get_public_url(path)
     logger.info("Photo uploaded successfully: %s", public_url)
     return public_url
+
+
+def delete_public_photo(client: Client, photo_url: str) -> None:
+    """Delete only a public URL belonging to this application's configured bucket."""
+    bucket_prefix = f"/storage/v1/object/public/{config.active_bucket}/"
+    if bucket_prefix not in photo_url:
+        logger.warning("Refusing to delete photo outside configured bucket")
+        return
+    client.storage.from_(config.active_bucket).remove([photo_url.split(bucket_prefix, 1)[1]])
+
+
+def delete_public_photo(client: Client, photo_url: str) -> None:
+    """Remove a photo only when its URL belongs to this application's bucket."""
+    bucket_prefix = f"/storage/v1/object/public/{config.active_bucket}/"
+    if bucket_prefix not in photo_url:
+        logger.warning("Refusing to delete a photo outside the configured bucket")
+        return
+    client.storage.from_(config.active_bucket).remove([photo_url.split(bucket_prefix, 1)[1]])

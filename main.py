@@ -14,7 +14,7 @@ from slowapi.middleware import SlowAPIMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from api.dependencies import limiter
-from api.endpoints.debug import debugRouter
+from api.routes.debug import debugRouter
 from api.routes.pages import router as pages_router
 from api.routes.submissions import router as submissions_router
 from config import config
@@ -44,7 +44,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=config.allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["*"],
 )
 

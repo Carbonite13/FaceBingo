@@ -18,6 +18,11 @@
         </div>
         <span class="brand-name">FaceBingo</span>
       </a>
+      <div class="header-spacer"></div>
+      <nav class="header-nav">
+        <a href="/">Home</a>
+        <a href="/admin" style="color: var(--clr-primary-dk);">Admin</a>
+      </nav>
     </div>
   </header>
 
@@ -28,7 +33,7 @@
         <p class="hero-subtitle">Meet the people at the event.</p>
       </section>
 
-      <div class="stat-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+      <div class="stat-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
         {% for user in users %}
         <div class="stat-card fade-up">
           <div style="font-weight: 600; font-size: 1.2rem; color: var(--clr-primary-dk); margin-bottom: var(--sp-1);">
